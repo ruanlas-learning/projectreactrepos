@@ -1,5 +1,5 @@
 import React, {useState, useCallback} from 'react';
-import {FaGithub, FaPlus} from 'react-icons/fa';
+import {FaGithub, FaPlus, FaSpinner} from 'react-icons/fa';
 import {Container, Form, SubmitButton} from './styles';
 
 import api from '../../services/api';
@@ -8,6 +8,7 @@ export default function Main(){
 
     const [newRepo, setNewRepo] = useState('');
     const [repositorios, setRepositorios] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     function handleInputChange(event){
         setNewRepo(event.target.value);
@@ -15,17 +16,23 @@ export default function Main(){
 
     const handleSubmit = useCallback((event) => {
         event.preventDefault();
-
+        // console.log(newRepo);
         async function submit(){
-            // console.log(newRepo);
-            const response = await api.get(`repos/${newRepo}`);
-            // console.log(response.data);
-            const data = {
-                name: response.data.full_name,
-            };
-
-            setRepositorios([...repositorios, data]);
-            setNewRepo('');
+            setLoading(true);
+            try{
+                const response = await api.get(`repos/${newRepo}`);
+                // console.log(response.data);
+                const data = {
+                    name: response.data.full_name,
+                };
+    
+                setRepositorios([...repositorios, data]);
+                setNewRepo('');
+            }catch(error){
+                console.log(error);
+            }finally{
+                setLoading(false);
+            }
         }
 
         submit();
@@ -42,8 +49,12 @@ export default function Main(){
                 <input type="text" placeholder="Adicionar Repositorios" 
                     value={newRepo} onChange={handleInputChange} />
 
-                <SubmitButton>
-                    <FaPlus color="#FFF" size={14}/>
+                <SubmitButton loading={ loading ? 1 : 0 }>
+                    {loading ? (
+                        <FaSpinner color="#FFF" size={14}/>
+                    ) : (
+                        <FaPlus color="#FFF" size={14}/>
+                    )}
                 </SubmitButton>
             </Form>
         </Container>
